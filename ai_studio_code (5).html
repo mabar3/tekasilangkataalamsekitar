@@ -1,0 +1,1671 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>TEKA SILANG KATA – MISI ALAM</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap');
+
+    :root {
+      --card-bg: #ffffff;
+      --green-main: #3cb371;
+      --green-dark: #1f6b43;
+      --text-dark: #214030;
+      --border-soft: #bce8c6;
+      --cell-empty: #fffef9;
+      --cell-hint: #d8f8e1;
+      --cell-selected: #ffe066;
+      --cell-correct: #51cf66;
+      --shadow-kawaii: 0 12px 30px rgba(49, 145, 91, 0.16);
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    html, body {
+      width: 100%;
+      min-height: 100%;
+      overflow-x: hidden;
+    }
+
+    body {
+      margin: 0;
+      padding: clamp(5px, 1.1vw, 12px);
+      font-family: 'Nunito', 'Segoe UI', system-ui, sans-serif;
+      color: var(--text-dark);
+      /* Latar belakang pastel pelangi ceria & kawaii */
+      background: linear-gradient(
+        180deg,
+        #bfeaff 0%,
+        #e4f6ff 24%,
+        #fff7d6 52%,
+        #e5fce8 78%,
+        #c8f5cf 100%
+      );
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      justify-content: flex-start;
+      position: relative;
+    }
+
+    /* Lapisan hiasan alam kawaii */
+    .kawaii-bg {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 0;
+    }
+
+    .kawaii-hill-back {
+      position: fixed;
+      bottom: -35px;
+      left: -10%;
+      width: 120%;
+      height: 160px;
+      background: radial-gradient(ellipse at 30% 100%, #a3eeae 0%, #8de59b 60%, transparent 72%),
+                  radial-gradient(ellipse at 78% 100%, #9ae9a7 0%, #7ede8f 55%, transparent 70%);
+      opacity: 0.7;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .decor-item {
+      position: absolute;
+      animation: floatKawaii 7s ease-in-out infinite;
+    }
+
+    .decor-sun {
+      top: 14px;
+      right: 16px;
+      width: 72px;
+      opacity: 0.9;
+      animation: sunWiggle 6s ease-in-out infinite;
+    }
+
+    @keyframes floatKawaii {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      50% { transform: translateY(-12px) rotate(5deg); }
+    }
+
+    @keyframes sunWiggle {
+      0%, 100% { transform: scale(1) rotate(-4deg); }
+      50% { transform: scale(1.06) rotate(4deg); }
+    }
+
+    /* Bingkai Utama Full-Width untuk Jotform */
+    .game-shell {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 100%;
+      min-height: calc(100vh - clamp(10px, 2.2vw, 24px));
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(6px);
+      border: 4px solid #ffffff;
+      border-radius: clamp(20px, 2.6vw, 32px);
+      box-shadow: var(--shadow-kawaii), 0 0 0 4px #b8ecc4;
+      padding: clamp(10px, 1.8vw, 22px) clamp(8px, 2vw, 22px);
+      display: flex;
+      flex-direction: column;
+      gap: clamp(10px, 1.4vw, 16px);
+    }
+
+    /* Header Kawaii */
+    .game-header {
+      background: linear-gradient(135deg, #c2f7cb 0%, #d1f1ff 48%, #ffeab6 82%, #ffd9e8 100%);
+      border-radius: clamp(16px, 2vw, 22px);
+      padding: clamp(10px, 1.6vw, 16px) clamp(12px, 2vw, 20px);
+      border: 2.5px solid #9be2ad;
+      box-shadow: 0 4px 12px rgba(56, 179, 113, 0.12);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .header-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .earth-badge {
+      width: clamp(44px, 5vw, 56px);
+      height: clamp(44px, 5vw, 56px);
+      flex-shrink: 0;
+      background: #ffffff;
+      border: 2.5px solid #98e6ad;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+      animation: gentleBounce 3s ease-in-out infinite;
+    }
+
+    @keyframes gentleBounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-4px); }
+    }
+
+    .title-wrap h1 {
+      margin: 0;
+      font-family: 'Fredoka', 'Nunito', sans-serif;
+      font-size: clamp(1.1rem, 3.1vw, 1.85rem);
+      color: #16613a;
+      letter-spacing: 0.4px;
+      line-height: 1.15;
+      text-shadow: 0 2px 0 rgba(255, 255, 255, 0.9);
+    }
+
+    .title-wrap p {
+      margin: 3px 0 0;
+      font-size: clamp(0.76rem, 1.6vw, 0.98rem);
+      font-weight: 800;
+      color: #2f6c50;
+    }
+
+    .header-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-left: auto;
+      flex-wrap: wrap;
+    }
+
+    .pill-badge {
+      background: #ffffff;
+      color: var(--green-dark);
+      border: 2px solid #8ae09c;
+      border-radius: 999px;
+      padding: 6px 14px;
+      font-size: clamp(0.78rem, 1.5vw, 0.92rem);
+      font-weight: 800;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    }
+
+    .music-btn {
+      background: linear-gradient(180deg, #ffec8b 0%, #ffd43b 100%);
+      color: #5c4300;
+      border: 2px solid #f0b400;
+      border-radius: 999px;
+      padding: 6px 14px;
+      font-family: inherit;
+      font-size: clamp(0.78rem, 1.5vw, 0.92rem);
+      font-weight: 800;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      box-shadow: 0 3px 0 #d9a100;
+      transition: transform 0.1s, box-shadow 0.1s;
+    }
+
+    .music-btn.off {
+      background: #f1f5f3;
+      color: #5b6d63;
+      border-color: #c7d5cd;
+      box-shadow: 0 3px 0 #b1c2b8;
+    }
+
+    .music-btn:active {
+      transform: translateY(2px);
+      box-shadow: 0 1px 0 #d9a100;
+    }
+
+    /* Arahan ringkas comel */
+    .guide-strip {
+      background: rgba(255, 255, 255, 0.88);
+      border: 2px dashed #82dc98;
+      border-radius: 15px;
+      padding: 8px 14px;
+      font-size: clamp(0.75rem, 1.6vw, 0.94rem);
+      font-weight: 700;
+      color: #245a3d;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    /* Kawasan Permainan Utama: KIRI = Papan Huruf A-Z, KANAN = Grid Silang Kata */
+    .play-board {
+      display: grid;
+      grid-template-columns: minmax(100px, 26%) 1fr;
+      gap: clamp(8px, 1.8vw, 22px);
+      align-items: start;
+      background: linear-gradient(180deg, #f3fff6 0%, #f1faff 100%);
+      border: 2.5px solid #bfe9c9;
+      border-radius: clamp(16px, 2vw, 24px);
+      padding: clamp(8px, 1.6vw, 18px);
+      width: 100%;
+    }
+
+    @media (min-width: 820px) {
+      .play-board {
+        grid-template-columns: minmax(210px, 265px) 1fr;
+      }
+    }
+
+    /* Papan Huruf A-Z di sebelah KIRI */
+    .alpha-panel {
+      background: linear-gradient(180deg, #e5f6ff 0%, #fff0f6 50%, #e7fceb 100%);
+      border: 2px solid #b8e3d9;
+      border-radius: 18px;
+      padding: clamp(6px, 1.2vw, 12px);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      position: sticky;
+      top: 8px;
+      box-shadow: 0 4px 10px rgba(56, 163, 209, 0.08);
+    }
+
+    .panel-label {
+      text-align: center;
+      font-family: 'Fredoka', sans-serif;
+      font-size: clamp(0.74rem, 1.6vw, 1rem);
+      color: #1f6349;
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 6px 4px;
+      border: 1.5px solid #b9e5c9;
+    }
+
+    .alpha-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: clamp(4px, 0.7vw, 7px);
+    }
+
+    .alpha-btn {
+      aspect-ratio: 1 / 1;
+      min-height: 28px;
+      border: 1.5px solid #8fd8a7;
+      border-radius: 10px;
+      background: linear-gradient(180deg, #ffffff 0%, #e6faec 100%);
+      color: #1c5437;
+      font-family: 'Fredoka', 'Nunito', sans-serif;
+      font-size: clamp(0.8rem, 1.8vw, 1.22rem);
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      box-shadow: 0 2.5px 0 #79c993;
+      transition: transform 0.08s, background 0.12s, box-shadow 0.08s;
+    }
+
+    .alpha-btn:nth-child(3n+2) {
+      background: linear-gradient(180deg, #ffffff 0%, #e8f6ff 100%);
+      border-color: #8ccff7;
+      box-shadow: 0 2.5px 0 #6bb9eb;
+      color: #19537d;
+    }
+
+    .alpha-btn:nth-child(3n) {
+      background: linear-gradient(180deg, #ffffff 0%, #fff4db 100%);
+      border-color: #f4cc6c;
+      box-shadow: 0 2.5px 0 #e6b43c;
+      color: #704e00;
+    }
+
+    .alpha-btn:hover {
+      background: #ffe9f3;
+      border-color: #f79ac0;
+    }
+
+    .alpha-btn:active {
+      transform: translateY(2px);
+      box-shadow: 0 0 0 #7dc795;
+      background: #ffe066;
+    }
+
+    /* Grid Teka Silang Kata di sebelah KANAN */
+    .crossword-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+    }
+
+    .crossword-grid {
+      display: grid;
+      grid-template-columns: repeat(13, 1fr);
+      gap: clamp(2px, 0.35vw, 4px);
+      width: 100%;
+      max-width: 620px;
+      background: linear-gradient(145deg, #d7f7e0 0%, #dff3ff 100%);
+      padding: clamp(4px, 0.8vw, 10px);
+      border-radius: 18px;
+      border: 2.5px solid #96dda9;
+      box-shadow: inset 0 2px 6px rgba(35, 122, 75, 0.09);
+    }
+
+    .cw-void {
+      aspect-ratio: 1 / 1;
+      border-radius: 4px;
+    }
+
+    .cw-cell {
+      position: relative;
+      aspect-ratio: 1 / 1;
+      background: var(--cell-empty);
+      border: 1.5px solid #72c48c;
+      border-radius: clamp(5px, 0.8vw, 9px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-family: 'Fredoka', 'Nunito', sans-serif;
+      font-size: clamp(0.75rem, 2.1vw, 1.35rem);
+      font-weight: 700;
+      color: #163d28;
+      transition: transform 0.1s, background-color 0.15s, border-color 0.15s, box-shadow 0.15s;
+      padding: 0;
+    }
+
+    .cw-cell:hover:not(.locked) {
+      border-color: #2f9e59;
+      background: #f2fff5;
+    }
+
+    .cw-cell.hint-preset {
+      background: linear-gradient(180deg, #dcfbe5 0%, #c6f4d3 100%);
+      border-color: #4db36e;
+      color: #125831;
+      cursor: default;
+    }
+
+    .cw-cell.in-active-word:not(.selected):not(.correct):not(.hint-preset) {
+      background: #eef9ff;
+    }
+
+    .cw-cell.selected {
+      background: var(--cell-selected) !important;
+      border: 2.5px solid #eb7a00 !important;
+      box-shadow: 0 0 0 2.5px rgba(255, 212, 59, 0.6);
+      transform: scale(1.07);
+      z-index: 3;
+    }
+
+    .cw-cell.correct {
+      background: linear-gradient(180deg, #69db7c 0%, #40c057 100%) !important;
+      border-color: #2b8a3e !important;
+      color: #ffffff !important;
+      animation: popSuccess 0.45s ease;
+    }
+
+    .cw-cell.hint-revealed {
+      background: #d0ebff;
+      border-color: #339af0;
+      color: #1864ab;
+      animation: popSuccess 0.4s ease;
+    }
+
+    @keyframes popSuccess {
+      0% { transform: scale(0.88); }
+      55% { transform: scale(1.12); }
+      100% { transform: scale(1); }
+    }
+
+    .cw-num {
+      position: absolute;
+      top: 1px;
+      left: 3px;
+      font-size: clamp(0.46rem, 1vw, 0.72rem);
+      font-weight: 800;
+      line-height: 1;
+      color: #1b6b40;
+      pointer-events: none;
+    }
+
+    .cw-cell.correct .cw-num {
+      color: #ebffef;
+    }
+
+    .cw-letter {
+      margin-top: 2px;
+      line-height: 1;
+      pointer-events: none;
+    }
+
+    /* Bar Status & Butang Tindakan */
+    .feedback-bar {
+      min-height: 42px;
+      background: linear-gradient(90deg, #fff9db 0%, #fff0f6 100%);
+      border: 2px solid #ffe066;
+      border-radius: 16px;
+      padding: 8px 14px;
+      font-size: clamp(0.8rem, 1.6vw, 1rem);
+      font-weight: 800;
+      color: #6b4f00;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      transition: all 0.2s ease;
+    }
+
+    .feedback-bar.success {
+      background: #d3f9d8;
+      border-color: #69db7c;
+      color: #195e2c;
+    }
+
+    .feedback-bar.warn {
+      background: #ffe3e3;
+      border-color: #ffa8a8;
+      color: #9c2020;
+    }
+
+    .action-bar {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: clamp(6px, 1.2vw, 14px);
+      width: 100%;
+    }
+
+    .act-btn {
+      border: none;
+      border-radius: 16px;
+      padding: clamp(10px, 1.4vw, 14px) 8px;
+      font-family: 'Fredoka', 'Nunito', sans-serif;
+      font-size: clamp(0.76rem, 1.6vw, 1.05rem);
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: transform 0.08s, box-shadow 0.08s;
+    }
+
+    .act-btn:active {
+      transform: translateY(2px);
+    }
+
+    .btn-padam {
+      background: #ffe0ea;
+      color: #a61e4d;
+      border: 2px solid #faa2c1;
+      box-shadow: 0 3px 0 #f06595;
+    }
+    .btn-padam:active { box-shadow: 0 1px 0 #f06595; }
+
+    .btn-hint {
+      background: #d0ebff;
+      color: #145a9e;
+      border: 2px solid #74c0fc;
+      box-shadow: 0 3px 0 #4dabf7;
+    }
+    .btn-hint:active { box-shadow: 0 1px 0 #4dabf7; }
+
+    .btn-semak {
+      background: linear-gradient(180deg, #51cf66 0%, #37b24d 100%);
+      color: #ffffff;
+      border: 2px solid #2b8a3e;
+      box-shadow: 0 3px 0 #237032;
+    }
+    .btn-semak:active { box-shadow: 0 1px 0 #237032; }
+
+    .btn-reset {
+      background: #fff3bf;
+      color: #7c5800;
+      border: 2px solid #ffd43b;
+      box-shadow: 0 3px 0 #fab005;
+    }
+    .btn-reset:active { box-shadow: 0 1px 0 #fab005; }
+
+    /* Bahagian Clue & Gambar */
+    .clues-section {
+      background: linear-gradient(180deg, #f3fff6 0%, #fff9fb 100%);
+      border: 2.5px solid #bfe9c9;
+      border-radius: 22px;
+      padding: clamp(10px, 1.6vw, 18px);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      width: 100%;
+    }
+
+    .clues-title {
+      margin: 0;
+      font-family: 'Fredoka', sans-serif;
+      font-size: clamp(1rem, 2.2vw, 1.32rem);
+      color: #1b5e3b;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding-left: 4px;
+    }
+
+    .clues-list {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: clamp(8px, 1.2vw, 12px);
+    }
+
+    @media (min-width: 820px) {
+      .clues-list {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .clue-row:last-child {
+        grid-column: 1 / -1;
+      }
+    }
+
+    .clue-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      background: #ffffff;
+      border: 2px solid #d5eed9;
+      border-radius: 18px;
+      padding: clamp(8px, 1.2vw, 12px);
+      box-shadow: 0 3px 8px rgba(41, 108, 66, 0.06);
+      transition: border-color 0.2s, background-color 0.2s, transform 0.15s;
+      cursor: pointer;
+    }
+
+    .clue-row:hover {
+      border-color: #7cd493;
+      transform: translateY(-1px);
+    }
+
+    .clue-row.active-clue {
+      border-color: #f4b400;
+      background: #fffdf0;
+    }
+
+    .clue-row.solved-clue {
+      border-color: #69db7c;
+      background: #eefcf0;
+    }
+
+    .clue-left {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .clue-num {
+      width: clamp(28px, 3vw, 34px);
+      height: clamp(28px, 3vw, 34px);
+      flex-shrink: 0;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #51cf66 0%, #2f9e44 100%);
+      color: #ffffff;
+      font-family: 'Fredoka', sans-serif;
+      font-size: clamp(0.9rem, 1.5vw, 1.05rem);
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 4px rgba(47, 158, 68, 0.25);
+      margin-top: 2px;
+    }
+
+    .clue-row.solved-clue .clue-num {
+      background: #2b8a3e;
+    }
+
+    .clue-body {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .clue-meta {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .dir-tag {
+      font-size: clamp(0.68rem, 1.2vw, 0.78rem);
+      font-weight: 800;
+      padding: 2px 9px;
+      border-radius: 999px;
+      background: #e7f5ff;
+      color: #1971c2;
+      border: 1px solid #a5d8ff;
+    }
+
+    .dir-tag.menegak {
+      background: #fff3bf;
+      color: #8f6300;
+      border-color: #ffe066;
+    }
+
+    .solved-tag {
+      font-size: clamp(0.68rem, 1.2vw, 0.78rem);
+      font-weight: 800;
+      padding: 2px 9px;
+      border-radius: 999px;
+      background: #d3f9d8;
+      color: #1b6e2d;
+      display: none;
+    }
+
+    .clue-row.solved-clue .solved-tag {
+      display: inline-block;
+    }
+
+    .clue-text {
+      margin: 0;
+      font-size: clamp(0.8rem, 1.55vw, 0.98rem);
+      font-weight: 700;
+      color: #274736;
+      line-height: 1.4;
+    }
+
+    /* Gambar Clue di hujung setiap lajur clue */
+    .clue-img-box {
+      width: clamp(78px, 18vw, 120px);
+      height: clamp(78px, 18vw, 120px);
+      flex-shrink: 0;
+      border-radius: 16px;
+      border: 2.5px solid #b5e6c0;
+      background: #f2fbf4;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.06);
+    }
+
+    .clue-img-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    /* Skrin Tamat / Kemenangan */
+    .victory-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(19, 66, 40, 0.65);
+      backdrop-filter: blur(5px);
+      z-index: 100;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .victory-overlay.show {
+      display: flex;
+      animation: fadeIn 0.35s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .victory-card {
+      position: relative;
+      width: 100%;
+      max-width: 480px;
+      background: linear-gradient(180deg, #ffffff 0%, #fff9fb 50%, #edfdf0 100%);
+      border: 4px solid #74e08a;
+      border-radius: 30px;
+      padding: 28px 22px 26px;
+      text-align: center;
+      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.25);
+      overflow: hidden;
+      animation: popSuccess 0.5s ease;
+    }
+
+    .victory-earth {
+      width: 124px;
+      height: 124px;
+      margin: 0 auto 10px;
+      animation: earthHappy 2.4s ease-in-out infinite;
+    }
+
+    @keyframes earthHappy {
+      0%, 100% { transform: scale(1) rotate(-3deg); }
+      50% { transform: scale(1.07) rotate(3deg); }
+    }
+
+    .victory-card h2 {
+      margin: 4px 0 8px;
+      font-family: 'Fredoka', sans-serif;
+      font-size: clamp(1.4rem, 3vw, 1.75rem);
+      color: #1a6b3b;
+    }
+
+    .victory-card p {
+      margin: 0 0 18px;
+      font-size: clamp(0.95rem, 1.8vw, 1.08rem);
+      font-weight: 700;
+      color: #325e46;
+      line-height: 1.45;
+    }
+
+    .replay-btn {
+      background: linear-gradient(180deg, #51cf66 0%, #2f9e44 100%);
+      color: #ffffff;
+      border: 2px solid #237a35;
+      border-radius: 999px;
+      padding: 12px 30px;
+      font-family: 'Fredoka', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 0 #1c632b;
+      transition: transform 0.1s;
+    }
+
+    .replay-btn:active {
+      transform: translateY(2px);
+      box-shadow: 0 2px 0 #1c632b;
+    }
+
+    .confetti-piece {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      border-radius: 4px;
+      animation: confettiFall 3.2s linear infinite;
+      pointer-events: none;
+    }
+
+    @keyframes confettiFall {
+      0% { transform: translateY(-30px) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(380px) rotate(360deg); opacity: 0; }
+    }
+
+    @media (max-width: 480px) {
+      .play-board {
+        grid-template-columns: minmax(92px, 29%) 1fr;
+        gap: 6px;
+        padding: 8px 5px;
+      }
+      .alpha-panel { padding: 6px 4px; }
+      .alpha-grid { gap: 3px; }
+      .crossword-grid { gap: 1.5px; padding: 4px; }
+      .action-bar { gap: 5px; }
+      .act-btn { padding: 9px 4px; font-size: 0.72rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Hiasan Latar Kawaii Alam Sekitar -->
+  <div class="kawaii-bg" aria-hidden="true">
+    <div class="kawaii-hill-back"></div>
+
+    <!-- Matahari Kawaii Tersenyum -->
+    <svg class="decor-item decor-sun" viewBox="0 0 80 80">
+      <g stroke="#ffd43b" stroke-width="5" stroke-linecap="round">
+        <line x1="40" y1="6" x2="40" y2="14"/>
+        <line x1="40" y1="66" x2="40" y2="74"/>
+        <line x1="6" y1="40" x2="14" y2="40"/>
+        <line x1="66" y1="40" x2="74" y2="40"/>
+        <line x1="16" y1="16" x2="22" y2="22"/>
+        <line x1="58" y1="58" x2="64" y2="64"/>
+        <line x1="64" y1="16" x2="58" y2="22"/>
+        <line x1="22" y1="58" x2="16" y2="64"/>
+      </g>
+      <circle cx="40" cy="40" r="20" fill="#ffe066" stroke="#fab005" stroke-width="2.5"/>
+      <circle cx="33" cy="38" r="2.2" fill="#5c3c00"/>
+      <circle cx="47" cy="38" r="2.2" fill="#5c3c00"/>
+      <path d="M35 45 Q40 50 45 45" stroke="#5c3c00" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+      <circle cx="29" cy="42" r="2.8" fill="#ff8787" opacity="0.65"/>
+      <circle cx="51" cy="42" r="2.8" fill="#ff8787" opacity="0.65"/>
+    </svg>
+
+    <!-- Awan Kawaii Kiri -->
+    <svg class="decor-item" style="top:20px; left:14px; width:84px; opacity:0.85;" viewBox="0 0 100 60">
+      <path d="M22 46 H78 C88 46 92 36 86 28 C82 22 74 22 70 24 C66 12 48 10 40 20 C32 16 20 22 20 32 C12 34 12 46 22 46 Z" fill="#ffffff" stroke="#b5e3ff" stroke-width="2.5"/>
+      <circle cx="43" cy="33" r="2" fill="#4c6ef5"/>
+      <circle cx="57" cy="33" r="2" fill="#4c6ef5"/>
+      <path d="M46 37 Q50 41 54 37" stroke="#4c6ef5" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <circle cx="38" cy="36" r="2.5" fill="#ffa8c5" opacity="0.7"/>
+      <circle cx="62" cy="36" r="2.5" fill="#ffa8c5" opacity="0.7"/>
+    </svg>
+
+    <!-- Bunga Kawaii -->
+    <svg class="decor-item" style="top:28%; left:2%; width:52px; opacity:0.6; animation-delay:1.2s;" viewBox="0 0 64 64">
+      <circle cx="32" cy="14" r="10" fill="#ffadd2"/>
+      <circle cx="49" cy="26" r="10" fill="#ffadd2"/>
+      <circle cx="43" cy="46" r="10" fill="#ffadd2"/>
+      <circle cx="21" cy="46" r="10" fill="#ffadd2"/>
+      <circle cx="15" cy="26" r="10" fill="#ffadd2"/>
+      <circle cx="32" cy="32" r="12" fill="#ffe066"/>
+      <circle cx="28" cy="31" r="1.6" fill="#5c3c00"/>
+      <circle cx="36" cy="31" r="1.6" fill="#5c3c00"/>
+      <path d="M29 35 Q32 38 35 35" stroke="#5c3c00" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+    </svg>
+
+    <!-- Rama-rama Pastel -->
+    <svg class="decor-item" style="top:45%; right:2%; width:50px; opacity:0.65; animation-delay:2.5s;" viewBox="0 0 64 64">
+      <ellipse cx="22" cy="26" rx="12" ry="14" transform="rotate(-20 22 26)" fill="#a5d8ff"/>
+      <ellipse cx="42" cy="26" rx="12" ry="14" transform="rotate(20 42 26)" fill="#a5d8ff"/>
+      <ellipse cx="24" cy="42" rx="9" ry="10" fill="#ffd6e7"/>
+      <ellipse cx="40" cy="42" rx="9" ry="10" fill="#ffd6e7"/>
+      <rect x="30" y="18" width="4" height="28" rx="2" fill="#495057"/>
+    </svg>
+  </div>
+
+  <!-- Bingkai Permainan Penuh Jotform -->
+  <main class="game-shell">
+
+    <!-- Header -->
+    <header class="game-header">
+      <div class="header-top">
+        <div class="brand-group">
+          <div class="earth-badge" aria-hidden="true">
+            <svg width="38" height="38" viewBox="0 0 64 64">
+              <circle cx="32" cy="32" r="28" fill="#4dabf7"/>
+              <path d="M18 18 C24 14, 32 18, 30 26 C28 32, 20 34, 16 28 Z" fill="#51cf66"/>
+              <path d="M38 14 C46 16, 52 24, 48 34 C44 40, 36 38, 36 30 Z" fill="#51cf66"/>
+              <path d="M24 40 C32 38, 40 44, 38 52 C32 56, 22 52, 22 46 Z" fill="#51cf66"/>
+              <circle cx="24" cy="29" r="2.5" fill="#183153"/>
+              <circle cx="40" cy="29" r="2.5" fill="#183153"/>
+              <path d="M26 37 Q32 43 38 37" stroke="#183153" stroke-width="2.8" fill="none" stroke-linecap="round"/>
+              <circle cx="19" cy="33" r="3.2" fill="#ff87a2" opacity="0.8"/>
+              <circle cx="45" cy="33" r="3.2" fill="#ff87a2" opacity="0.8"/>
+            </svg>
+          </div>
+          <div class="title-wrap">
+            <h1>TEKA SILANG KATA – MISI ALAM</h1>
+            <p>Alam Ceria Hidup Sejahtera • Pendidikan Islam Tahun 5</p>
+          </div>
+        </div>
+
+        <div class="header-controls">
+          <span class="pill-badge" id="progressBadge">🌸 0 / 7 Selesai</span>
+          <button type="button" class="music-btn" id="musicBtn" aria-label="Kawalan Muzik Latar">
+            🎵 Muzik: ON
+          </button>
+        </div>
+      </div>
+
+      <div class="guide-strip">
+        <span>✨ <strong>Cara Main:</strong> Kotak hijau ialah huruf pembayang. Tekan kotak kosong pada grid dahulu, kemudian pilih huruf di papan A–Z sebelah kiri!</span>
+      </div>
+    </header>
+
+    <!-- Papan Permainan: Kiri (A-Z) + Kanan (Grid Silang Kata) -->
+    <section class="play-board" aria-label="Kawasan Teka Silang Kata">
+      <!-- Papan Huruf A hingga Z di sebelah kiri -->
+      <aside class="alpha-panel" aria-label="Papan Huruf A hingga Z">
+        <div class="panel-label">🌈 Huruf A–Z</div>
+        <div class="alpha-grid" id="alphaGrid"></div>
+      </aside>
+
+      <!-- Grid Teka Silang Kata -->
+      <div class="crossword-wrap">
+        <div class="crossword-grid" id="crosswordGrid" role="grid" aria-label="Grid Teka Silang Kata"></div>
+      </div>
+    </section>
+
+    <!-- Mesej Status Interaktif -->
+    <div class="feedback-bar" id="feedbackBar">
+      Pilih mana-mana kotak kosong dan lengkapkan huruf berdasarkan huruf pembayang serta gambar clue!
+    </div>
+
+    <!-- Butang Kawalan Interaktif -->
+    <section class="action-bar" aria-label="Kawalan Permainan">
+      <button type="button" class="act-btn btn-padam" id="btnPadam">⌫ PADAM</button>
+      <button type="button" class="act-btn btn-hint" id="btnHint">💡 HINT (<span id="hintCount">7</span>)</button>
+      <button type="button" class="act-btn btn-semak" id="btnSemak">✅ SEMAK JAWAPAN</button>
+      <button type="button" class="act-btn btn-reset" id="btnReset">🔄 RESET</button>
+    </section>
+
+    <!-- Senarai Clue dan Gambar -->
+    <section class="clues-section" aria-label="Petunjuk dan Gambar">
+      <h2 class="clues-title">🌼 Petunjuk &amp; Gambar Amalan (1 – 7)</h2>
+      <div class="clues-list" id="cluesList"></div>
+    </section>
+
+  </main>
+
+  <!-- Skrin Kemenangan / Tamat -->
+  <div class="victory-overlay" id="victoryOverlay" role="dialog" aria-modal="true" aria-labelledby="victoryTitle">
+    <div class="victory-card" id="victoryCard">
+      <div class="victory-earth" aria-hidden="true">
+        <svg viewBox="0 0 120 120">
+          <circle cx="60" cy="60" r="52" fill="#d3f9d8" opacity="0.7"/>
+          <path d="M16 74 C6 58, 12 42, 26 44 C30 56, 26 68, 16 74 Z" fill="#51cf66"/>
+          <path d="M104 74 C114 58, 108 42, 94 44 C90 56, 94 68, 104 74 Z" fill="#51cf66"/>
+          <circle cx="60" cy="62" r="36" fill="#4dabf7" stroke="#228be6" stroke-width="3"/>
+          <path d="M38 46 C46 40, 56 46, 54 56 C52 64, 42 66, 36 58 Z" fill="#51cf66"/>
+          <path d="M68 40 C80 42, 88 54, 82 68 C76 76, 66 72, 66 60 Z" fill="#51cf66"/>
+          <path d="M46 76 C58 72, 70 80, 66 90 C56 94, 42 88, 46 76 Z" fill="#51cf66"/>
+          <circle cx="48" cy="58" r="3.5" fill="#183153"/>
+          <circle cx="72" cy="58" r="3.5" fill="#183153"/>
+          <path d="M50 70 Q60 80 70 70" stroke="#183153" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+          <circle cx="41" cy="65" r="4.5" fill="#ff87a2" opacity="0.8"/>
+          <circle cx="79" cy="65" r="4.5" fill="#ff87a2" opacity="0.8"/>
+          <path d="M52 24 C50 14, 58 10, 60 22 C62 10, 70 14, 68 24 Z" fill="#40c057"/>
+        </svg>
+      </div>
+      <h2 id="victoryTitle">TAHNIAH, PENJAGA ALAM!</h2>
+      <p>Hebat! Kamu berjaya mengenal pasti amalan menjaga dan merosakkan alam sekitar.</p>
+      <button type="button" class="replay-btn" id="btnReplay">🌟 MAIN SEMULA</button>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      'use strict';
+
+      /* =========================================================
+         1. DATA JAWAPAN, KOORDINAT GRID SAH (16 BARIS x 13 LAJUR),
+            HURUF PEMBAYANG & GAMBAR CLUE CLOUDINARY
+      ========================================================= */
+      const ROWS = 16;
+      const COLS = 13;
+
+      const WORDS = [
+        {
+          id: 1,
+          answer: 'TANAMPOKOK',
+          dir: 'melintang',
+          dirLabel: 'Melintang',
+          row: 3,
+          col: 3,
+          hintIndices: [0, 3, 5, 8],
+          clue: 'Amalan menyemai anak tumbuhan hijau di dalam tanah untuk menghijaukan bumi.',
+          img: 'https://res.cloudinary.com/lzlce78k/image/upload/v1795405096/photo_6062161187018838444_w.jpg'
+        },
+        {
+          id: 2,
+          answer: 'BAKARSAMPAH',
+          dir: 'menegak',
+          dirLabel: 'Menegak',
+          row: 2,
+          col: 6,
+          hintIndices: [0, 2, 5, 8, 10],
+          clue: 'Perbuatan tidak baik menyalakan api pada timbunan sisa buangan yang menghasilkan asap tebal.',
+          img: 'https://res.cloudinary.com/lzlce78k/image/upload/v1795405249/photo_6062161187018838445_w.jpg'
+        },
+        {
+          id: 3,
+          answer: 'JIMATAIR',
+          dir: 'menegak',
+          dirLabel: 'Menegak',
+          row: 6,
+          col: 2,
+          hintIndices: [0, 3, 6],
+          clue: 'Amalan mulia menutup pili selepas digunakan supaya sumber air tidak terbazir.',
+          img: 'https://res.cloudinary.com/lzlce78k/image/upload/v1795405266/photo_6062161187018838446_w.jpg'
+        },
+        {
+          id: 4,
+          answer: 'BUANGSAMPAH',
+          dir: 'menegak',
+          dirLabel: 'Menegak',
+          row: 1,
+          col: 4,
+          hintIndices: [0, 2, 4, 7, 10],
+          clue: 'Perbuatan menjaga kebersihan dengan memasukkan sisa kotoran ke dalam tong yang disediakan.',
+          img: 'https://res.cloudinary.com/lzlce78k/image/upload/v1795405293/photo_6062161187018838447_w.jpg'
+        },
+        {
+          id: 5,
+          answer: 'KUTIPSAMPAH',
+          dir: 'menegak',
+          dirLabel: 'Menegak',
+          row: 6,
+          col: 9,
+          hintIndices: [0, 3, 5, 8],
+          clue: 'Amalan mengumpul dan mengambil sisa kotoran yang bertaburan di kawasan taman.',
+          img: 'https://res.cloudinary.com/lzlce78k/image/upload/v1795405648/photo_6062161187018838462_w.jpg'
+        },
+        {
+          id: 6,
+          answer: 'TEBANGPOKOK',
+          dir: 'melintang',
+          dirLabel: 'Melintang',
+          row: 14,
+          col: 3,
+          hintIndices: [0, 2, 6, 9],
+          clue: 'Perbuatan merosakkan hutan apabila pokok besar dipotong sehingga tinggal tunggul kayu.',
+          img: 'https://res.cloudinary.com/lzlce78k/image/upload/v1795405331/photo_6062161187018838450_w.jpg'
+        },
+        {
+          id: 7,
+          answer: 'KITARSEMULA',
+          dir: 'melintang',
+          dirLabel: 'Melintang',
+          row: 7,
+          col: 1,
+          hintIndices: [0, 2, 5, 9],
+          clue: 'Amalan mengasingkan botol plastik, kertas dan tin ke dalam tong khas untuk diproses semula.',
+          img: 'https://res.cloudinary.com/lzlce78k/image/upload/v1795405353/photo_6062161187018838454_w.jpg'
+        }
+      ];
+
+      /* =========================================================
+         2. PEMBINAAN STRUKTUR GRID & HURUF PEMBAYANG TAMBAHAN
+      ========================================================= */
+      const gridData = Array.from({ length: ROWS + 1 }, () =>
+        Array.from({ length: COLS + 1 }, () => null)
+      );
+
+      WORDS.forEach((wordObj) => {
+        const chars = wordObj.answer.split('');
+        chars.forEach((ch, idx) => {
+          const r = wordObj.dir === 'melintang' ? wordObj.row : wordObj.row + idx;
+          const c = wordObj.dir === 'melintang' ? wordObj.col + idx : wordObj.col;
+          const isPresetHint = wordObj.hintIndices.includes(idx);
+
+          if (!gridData[r][c]) {
+            gridData[r][c] = {
+              row: r,
+              col: c,
+              solution: ch,
+              userChar: isPresetHint ? ch : '',
+              isPresetHint: isPresetHint,
+              isRevealedHint: false,
+              isLockedSolved: false,
+              startNumber: idx === 0 ? wordObj.id : null,
+              wordIds: [wordObj.id]
+            };
+          } else {
+            if (isPresetHint) {
+              gridData[r][c].isPresetHint = true;
+              gridData[r][c].userChar = ch;
+            }
+            if (idx === 0) {
+              gridData[r][c].startNumber = wordObj.id;
+            }
+            gridData[r][c].wordIds.push(wordObj.id);
+          }
+        });
+      });
+
+      /* =========================================================
+         3. STATE PERMAINAN
+      ========================================================= */
+      let selectedCell = null;
+      let activeWordId = null;
+      let hintsRemaining = 7;
+      const solvedWordIds = new Set();
+
+      const elAlphaGrid = document.getElementById('alphaGrid');
+      const elCrosswordGrid = document.getElementById('crosswordGrid');
+      const elCluesList = document.getElementById('cluesList');
+      const elFeedback = document.getElementById('feedbackBar');
+      const elProgress = document.getElementById('progressBadge');
+      const elHintCount = document.getElementById('hintCount');
+      const elVictory = document.getElementById('victoryOverlay');
+      const elVictoryCard = document.getElementById('victoryCard');
+      const elMusicBtn = document.getElementById('musicBtn');
+
+      /* =========================================================
+         4. MUZIK LATAR INSTRUMENTAL LEMBUT (WEB AUDIO API) & SFX
+      ========================================================= */
+      let audioCtx = null;
+      let musicEnabled = true;
+      let musicTimer = null;
+      let noteStep = 0;
+
+      const MELODY = [
+        523.25, 659.25, 783.99, 659.25,
+        880.00, 783.99, 659.25, 587.33,
+        523.25, 587.33, 659.25, 783.99,
+        659.25, 587.33, 523.25, 0,
+        783.99, 880.00, 1046.50, 880.00,
+        783.99, 659.25, 587.33, 659.25,
+        523.25, 587.33, 659.25, 587.33,
+        523.25, 0, 523.25, 0
+      ];
+      const BASS = [
+        261.63, 0, 392.00, 0,
+        349.23, 0, 293.66, 0,
+        261.63, 0, 329.63, 0,
+        392.00, 0, 261.63, 0,
+        392.00, 0, 349.23, 0,
+        329.63, 0, 293.66, 0,
+        261.63, 0, 392.00, 0,
+        261.63, 0, 0, 0
+      ];
+
+      function ensureAudioContext() {
+        if (!audioCtx) {
+          const AC = window.AudioContext || window.webkitAudioContext;
+          if (AC) audioCtx = new AC();
+        }
+        if (audioCtx && audioCtx.state === 'suspended') {
+          audioCtx.resume();
+        }
+      }
+
+      function playTone(freq, duration, type = 'sine', volume = 0.045) {
+        if (!audioCtx || !freq) return;
+        const now = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, now);
+
+        gain.gain.setValueAtTime(0.0001, now);
+        gain.gain.exponentialRampToValueAtTime(volume, now + 0.025);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(now);
+        osc.stop(now + duration + 0.03);
+      }
+
+      function startMusicLoop() {
+        if (musicTimer || !musicEnabled) return;
+        ensureAudioContext();
+        musicTimer = setInterval(() => {
+          if (!musicEnabled || !audioCtx || audioCtx.state !== 'running') return;
+          const mFreq = MELODY[noteStep % MELODY.length];
+          const bFreq = BASS[noteStep % BASS.length];
+          if (mFreq) playTone(mFreq, 0.42, 'triangle', 0.035);
+          if (bFreq) playTone(bFreq, 0.55, 'sine', 0.028);
+          noteStep++;
+        }, 380);
+      }
+
+      function stopMusicLoop() {
+        if (musicTimer) {
+          clearInterval(musicTimer);
+          musicTimer = null;
+        }
+      }
+
+      function playSfx(kind) {
+        ensureAudioContext();
+        if (!audioCtx) return;
+        if (kind === 'click') {
+          playTone(660, 0.09, 'sine', 0.05);
+        } else if (kind === 'erase') {
+          playTone(340, 0.1, 'triangle', 0.04);
+        } else if (kind === 'hint') {
+          playTone(587.33, 0.14, 'sine', 0.05);
+          setTimeout(() => playTone(880, 0.2, 'sine', 0.05), 90);
+        } else if (kind === 'wordOk') {
+          [523.25, 659.25, 783.99].forEach((f, i) =>
+            setTimeout(() => playTone(f, 0.2, 'triangle', 0.06), i * 85)
+          );
+        } else if (kind === 'wrong') {
+          playTone(260, 0.16, 'sine', 0.045);
+          setTimeout(() => playTone(220, 0.2, 'sine', 0.045), 110);
+        } else if (kind === 'win') {
+          [523.25, 659.25, 783.99, 1046.5].forEach((f, i) =>
+            setTimeout(() => playTone(f, 0.35, 'triangle', 0.07), i * 120)
+          );
+        }
+      }
+
+      function unlockAudioOnFirstGesture() {
+        ensureAudioContext();
+        if (musicEnabled && !musicTimer) startMusicLoop();
+        document.removeEventListener('pointerdown', unlockAudioOnFirstGesture);
+      }
+      document.addEventListener('pointerdown', unlockAudioOnFirstGesture);
+
+      elMusicBtn.addEventListener('click', () => {
+        ensureAudioContext();
+        musicEnabled = !musicEnabled;
+        if (musicEnabled) {
+          elMusicBtn.textContent = '🎵 Muzik: ON';
+          elMusicBtn.classList.remove('off');
+          startMusicLoop();
+        } else {
+          elMusicBtn.textContent = '🔇 Muzik: OFF';
+          elMusicBtn.classList.add('off');
+          stopMusicLoop();
+        }
+      });
+
+      /* =========================================================
+         5. BINA PAPAN HURUF A-Z DI SEBELAH KIRI
+      ========================================================= */
+      function buildAlphabetPanel() {
+        elAlphaGrid.innerHTML = '';
+        for (let code = 65; code <= 90; code++) {
+          const letter = String.fromCharCode(code);
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'alpha-btn';
+          btn.textContent = letter;
+          btn.setAttribute('aria-label', 'Huruf ' + letter);
+          btn.addEventListener('click', () => handleLetterInput(letter));
+          elAlphaGrid.appendChild(btn);
+        }
+      }
+
+      /* =========================================================
+         6. BINA GRID SILANG KATA & CLUE BERGAMBAR
+      ========================================================= */
+      const cellElements = Array.from({ length: ROWS + 1 }, () =>
+        Array.from({ length: COLS + 1 }, () => null)
+      );
+
+      function buildCrosswordGrid() {
+        elCrosswordGrid.innerHTML = '';
+        for (let r = 1; r <= ROWS; r++) {
+          for (let c = 1; c <= COLS; c++) {
+            const cellData = gridData[r][c];
+            if (!cellData) {
+              const voidDiv = document.createElement('div');
+              voidDiv.className = 'cw-void';
+              elCrosswordGrid.appendChild(voidDiv);
+            } else {
+              const btn = document.createElement('button');
+              btn.type = 'button';
+              btn.className = 'cw-cell';
+              btn.dataset.row = r;
+              btn.dataset.col = c;
+              btn.setAttribute('role', 'gridcell');
+
+              if (cellData.startNumber !== null) {
+                const numSpan = document.createElement('span');
+                numSpan.className = 'cw-num';
+                numSpan.textContent = cellData.startNumber;
+                btn.appendChild(numSpan);
+              }
+
+              const letterSpan = document.createElement('span');
+              letterSpan.className = 'cw-letter';
+              letterSpan.textContent = cellData.userChar;
+              btn.appendChild(letterSpan);
+
+              btn.addEventListener('click', () => selectGridCell(r, c));
+
+              cellElements[r][c] = btn;
+              elCrosswordGrid.appendChild(btn);
+            }
+          }
+        }
+      }
+
+      function buildClues() {
+        elCluesList.innerHTML = '';
+        WORDS.forEach((w) => {
+          const row = document.createElement('div');
+          row.className = 'clue-row';
+          row.id = 'clueRow-' + w.id;
+          row.innerHTML = `
+            <div class="clue-left">
+              <div class="clue-num">${w.id}</div>
+              <div class="clue-body">
+                <div class="clue-meta">
+                  <span class="dir-tag ${w.dir}">${w.dirLabel} • ${w.answer.length} huruf</span>
+                  <span class="solved-tag">✔ Betul!</span>
+                </div>
+                <p class="clue-text">${w.clue}</p>
+              </div>
+            </div>
+            <div class="clue-img-box">
+              <img src="${w.img}" alt="Gambar Petunjuk ${w.id}" loading="lazy" />
+            </div>
+          `;
+
+          row.addEventListener('click', () => {
+            activeWordId = w.id;
+            const firstEditable = findFirstEditableCellInWord(w);
+            if (firstEditable) {
+              selectedCell = { row: firstEditable.row, col: firstEditable.col };
+              setFeedback(`Clue ${w.id} (${w.dirLabel}) dipilih. Tekan huruf di sebelah kiri untuk mengisi kotak kuning.`, 'normal');
+            } else {
+              setFeedback(`Clue ${w.id} (${w.dirLabel}) sudah diisi penuh!`, 'normal');
+            }
+            renderGrid();
+          });
+
+          elCluesList.appendChild(row);
+        });
+      }
+
+      function findFirstEditableCellInWord(wordObj) {
+        for (let i = 0; i < wordObj.answer.length; i++) {
+          const r = wordObj.dir === 'melintang' ? wordObj.row : wordObj.row + i;
+          const c = wordObj.dir === 'melintang' ? wordObj.col + i : wordObj.col;
+          const cell = gridData[r][c];
+          if (!cell.isPresetHint && !cell.isLockedSolved && !cell.userChar) {
+            return cell;
+          }
+        }
+        for (let i = 0; i < wordObj.answer.length; i++) {
+          const r = wordObj.dir === 'melintang' ? wordObj.row : wordObj.row + i;
+          const c = wordObj.dir === 'melintang' ? wordObj.col + i : wordObj.col;
+          const cell = gridData[r][c];
+          if (!cell.isPresetHint && !cell.isLockedSolved) {
+            return cell;
+          }
+        }
+        return null;
+      }
+
+      /* =========================================================
+         7. INTERAKSI PEMAIN: PILIH KOTAK -> PILIH HURUF
+      ========================================================= */
+      function selectGridCell(r, c) {
+        const cell = gridData[r][c];
+        if (!cell) return;
+        playSfx('click');
+
+        if (cell.isPresetHint) {
+          activeWordId = cell.wordIds[0];
+          selectedCell = null;
+          setFeedback(`Kotak "${cell.solution}" ialah huruf pembayang kekal dan tidak boleh diubah. Pilih kotak kosong lain!`, 'warn');
+          renderGrid();
+          return;
+        }
+
+        if (cell.isLockedSolved) {
+          activeWordId = cell.wordIds[0];
+          selectedCell = null;
+          setFeedback('Kotak ini sudah betul dan disahkan hijau! Pilih kotak perkataan lain yang belum selesai.', 'success');
+          renderGrid();
+          return;
+        }
+
+        selectedCell = { row: r, col: c };
+        if (!activeWordId || !cell.wordIds.includes(activeWordId)) {
+          activeWordId = cell.wordIds[0];
+        }
+        const wordObj = WORDS.find((w) => w.id === activeWordId);
+        setFeedback(`Kotak dipilih (Petunjuk ${wordObj.id} – ${wordObj.dirLabel}). Sekarang tekan huruf pada papan A–Z di kiri.`, 'normal');
+        renderGrid();
+      }
+
+      function handleLetterInput(letter) {
+        if (!selectedCell) {
+          playSfx('wrong');
+          setFeedback('Sila tekan satu kotak kosong pada grid terlebih dahulu sebelum memilih huruf!', 'warn');
+          return;
+        }
+
+        const cell = gridData[selectedCell.row][selectedCell.col];
+        if (!cell || cell.isPresetHint || cell.isLockedSolved) {
+          playSfx('wrong');
+          setFeedback('Kotak ini tidak boleh diubah. Sila pilih kotak kosong yang lain.', 'warn');
+          return;
+        }
+
+        cell.userChar = letter;
+        cell.isRevealedHint = false;
+        playSfx('click');
+        setFeedback(`Huruf "${letter}" dimasukkan! Pilih kotak seterusnya untuk meneruskan.`, 'normal');
+        renderGrid();
+      }
+
+      function handleErase() {
+        if (!selectedCell) {
+          playSfx('wrong');
+          setFeedback('Pilih kotak yang hendak dipadam terlebih dahulu.', 'warn');
+          return;
+        }
+        const cell = gridData[selectedCell.row][selectedCell.col];
+        if (cell.isPresetHint || cell.isLockedSolved) {
+          playSfx('wrong');
+          setFeedback('Huruf pembayang atau jawapan yang sudah betul tidak boleh dipadam.', 'warn');
+          return;
+        }
+        cell.userChar = '';
+        cell.isRevealedHint = false;
+        playSfx('erase');
+        setFeedback('Huruf pada kotak yang dipilih telah dipadam.', 'normal');
+        renderGrid();
+      }
+
+      function handleHint() {
+        if (hintsRemaining <= 0) {
+          playSfx('wrong');
+          setFeedback('Semua 7 petunjuk huruf telah digunakan! Cuba lengkapkan baki kotak berdasarkan gambar clue.', 'warn');
+          return;
+        }
+
+        let targetCell = null;
+
+        if (selectedCell) {
+          const c = gridData[selectedCell.row][selectedCell.col];
+          if (c && !c.isPresetHint && !c.isLockedSolved && c.userChar !== c.solution) {
+            targetCell = c;
+          }
+        }
+
+        if (!targetCell) {
+          const candidates = [];
+          for (const w of WORDS) {
+            if (solvedWordIds.has(w.id)) continue;
+            for (let i = 0; i < w.answer.length; i++) {
+              const r = w.dir === 'melintang' ? w.row : w.row + i;
+              const col = w.dir === 'melintang' ? w.col + i : w.col;
+              const cell = gridData[r][col];
+              if (!cell.isPresetHint && !cell.isLockedSolved && cell.userChar !== cell.solution) {
+                candidates.push(cell);
+              }
+            }
+          }
+          if (candidates.length > 0) {
+            targetCell = candidates[Math.floor(Math.random() * candidates.length)];
+          }
+        }
+
+        if (!targetCell) {
+          setFeedback('Semua kotak telah diisi dengan huruf yang betul! Tekan SEMAK JAWAPAN.', 'success');
+          return;
+        }
+
+        targetCell.userChar = targetCell.solution;
+        targetCell.isRevealedHint = true;
+        selectedCell = { row: targetCell.row, col: targetCell.col };
+        activeWordId = targetCell.wordIds[0];
+        hintsRemaining--;
+        elHintCount.textContent = hintsRemaining;
+        playSfx('hint');
+        setFeedback(`💡 Petunjuk diberi! 1 huruf ("${targetCell.solution}") telah dibuka untuk membantu kamu.`, 'normal');
+        renderGrid();
+      }
+
+      function handleCheckAnswers() {
+        let newlySolved = 0;
+        let incompleteCount = 0;
+        let wrongCount = 0;
+
+        WORDS.forEach((w) => {
+          let allFilled = true;
+          let allMatch = true;
+
+          for (let i = 0; i < w.answer.length; i++) {
+            const r = w.dir === 'melintang' ? w.row : w.row + i;
+            const c = w.dir === 'melintang' ? w.col + i : w.col;
+            const cell = gridData[r][c];
+            if (!cell.userChar) {
+              allFilled = false;
+              allMatch = false;
+            } else if (cell.userChar !== cell.solution) {
+              allMatch = false;
+            }
+          }
+
+          if (allMatch) {
+            if (!solvedWordIds.has(w.id)) {
+              newlySolved++;
+            }
+            solvedWordIds.add(w.id);
+            for (let i = 0; i < w.answer.length; i++) {
+              const r = w.dir === 'melintang' ? w.row : w.row + i;
+              const c = w.dir === 'melintang' ? w.col + i : w.col;
+              gridData[r][c].isLockedSolved = true;
+            }
+          } else {
+            if (!allFilled) incompleteCount++;
+            else wrongCount++;
+          }
+        });
+
+        if (selectedCell && gridData[selectedCell.row][selectedCell.col].isLockedSolved) {
+          selectedCell = null;
+        }
+
+        renderGrid();
+        updateProgress();
+
+        if (solvedWordIds.size === WORDS.length) {
+          playSfx('win');
+          setFeedback('🎉 Syabas! Kesemua 7 jawapan adalah tepat!', 'success');
+          showVictoryScreen();
+        } else if (newlySolved > 0) {
+          playSfx('wordOk');
+          setFeedback(
+            `🌟 Bagus! ${solvedWordIds.size} daripada 7 jawapan sudah betul! Teruskan mencuba untuk baki ${7 - solvedWordIds.size} jawapan lagi.`,
+            'success'
+          );
+        } else {
+          playSfx('wrong');
+          if (wrongCount > 0 && incompleteCount === 0) {
+            setFeedback('💪 Cuba lagi! Ada huruf yang kurang tepat. Perhatikan gambar clue dengan teliti dan ubah jawapan kamu.', 'warn');
+          } else {
+            setFeedback(`🌱 Teruskan usaha! (${solvedWordIds.size}/7 betul). Lengkapkan kotak yang masih kosong atau semak ejaan semula.`, 'warn');
+          }
+        }
+      }
+
+      function handleReset() {
+        selectedCell = null;
+        activeWordId = null;
+        hintsRemaining = 7;
+        elHintCount.textContent = hintsRemaining;
+        solvedWordIds.clear();
+
+        for (let r = 1; r <= ROWS; r++) {
+          for (let c = 1; c <= COLS; c++) {
+            const cell = gridData[r][c];
+            if (!cell) continue;
+            cell.isLockedSolved = false;
+            cell.isRevealedHint = false;
+            cell.userChar = cell.isPresetHint ? cell.solution : '';
+          }
+        }
+
+        elVictory.classList.remove('show');
+        clearConfetti();
+        playSfx('erase');
+        setFeedback('Permainan dimulakan semula! Pilih kotak kosong pada grid dan masukkan huruf.', 'normal');
+        updateProgress();
+        renderGrid();
+      }
+
+      /* =========================================================
+         8. KEMAS KINI PAPARAN GRID, CLUE & SKRIN KEMENANGAN
+      ========================================================= */
+      function renderGrid() {
+        for (let r = 1; r <= ROWS; r++) {
+          for (let c = 1; c <= COLS; c++) {
+            const cell = gridData[r][c];
+            const btn = cellElements[r][c];
+            if (!cell || !btn) continue;
+
+            const letterSpan = btn.querySelector('.cw-letter');
+            letterSpan.textContent = cell.userChar;
+
+            btn.classList.remove('hint-preset', 'selected', 'correct', 'in-active-word', 'hint-revealed', 'locked');
+
+            if (cell.isPresetHint) {
+              btn.classList.add('hint-preset', 'locked');
+            }
+            if (cell.isLockedSolved) {
+              btn.classList.add('correct', 'locked');
+            } else if (cell.isRevealedHint) {
+              btn.classList.add('hint-revealed');
+            }
+
+            if (activeWordId && cell.wordIds.includes(activeWordId)) {
+              btn.classList.add('in-active-word');
+            }
+
+            if (selectedCell && selectedCell.row === r && selectedCell.col === c) {
+              btn.classList.add('selected');
+            }
+          }
+        }
+
+        WORDS.forEach((w) => {
+          const rowEl = document.getElementById('clueRow-' + w.id);
+          if (!rowEl) return;
+          rowEl.classList.toggle('active-clue', activeWordId === w.id && !solvedWordIds.has(w.id));
+          rowEl.classList.toggle('solved-clue', solvedWordIds.has(w.id));
+        });
+      }
+
+      function updateProgress() {
+        elProgress.textContent = `🌸 ${solvedWordIds.size} / ${WORDS.length} Selesai`;
+      }
+
+      function setFeedback(msg, tone) {
+        elFeedback.textContent = msg;
+        elFeedback.classList.remove('success', 'warn');
+        if (tone === 'success') elFeedback.classList.add('success');
+        if (tone === 'warn') elFeedback.classList.add('warn');
+      }
+
+      function showVictoryScreen() {
+        clearConfetti();
+        const colors = ['#51cf66', '#ffd43b', '#4dabf7', '#ff87a2', '#a9e34b'];
+        for (let i = 0; i < 24; i++) {
+          const piece = document.createElement('div');
+          piece.className = 'confetti-piece';
+          piece.style.left = Math.random() * 100 + '%';
+          piece.style.top = (-10 - Math.random() * 40) + 'px';
+          piece.style.background = colors[i % colors.length];
+          piece.style.animationDelay = (Math.random() * 2.2) + 's';
+          piece.style.animationDuration = (2.4 + Math.random() * 1.5) + 's';
+          elVictoryCard.appendChild(piece);
+        }
+        elVictory.classList.add('show');
+      }
+
+      function clearConfetti() {
+        elVictoryCard.querySelectorAll('.confetti-piece').forEach((el) => el.remove());
+      }
+
+      /* =========================================================
+         9. SAMBUNGAN BUTANG & MULA PERMAINAN
+      ========================================================= */
+      document.getElementById('btnPadam').addEventListener('click', handleErase);
+      document.getElementById('btnHint').addEventListener('click', handleHint);
+      document.getElementById('btnSemak').addEventListener('click', handleCheckAnswers);
+      document.getElementById('btnReset').addEventListener('click', handleReset);
+      document.getElementById('btnReplay').addEventListener('click', handleReset);
+
+      buildAlphabetPanel();
+      buildCrosswordGrid();
+      buildClues();
+      updateProgress();
+      renderGrid();
+    })();
+  </script>
+</body>
+</html>
